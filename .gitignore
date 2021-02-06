@@ -34,7 +34,6 @@
 *.app
 *.i*86
 *.x86_64
-*.hex
 
 # Debug files
 *.dSYM/
@@ -50,3 +49,39 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Keil
+*.bak
+*.ddk
+*.edk
+*.lst
+*.lnp
+*.mpf
+*.mpj
+*.obj
+*.omf
+*.opt
+*.plg
+*.rpt
+*.tmp
+*.__i
+*.crf
+*.o
+*.d
+*.tra
+*.dep
+*.iex
+*.htm
+*.sct
+*.map
+*.log
+*.bat
+*.lock
+*.uvoptx
+*.ini
+DebugConfig
+JLinkLog.txt
+*.[0-9][0-9][0-9][0-9][0-9]
+
+# vscode
+.vscode
