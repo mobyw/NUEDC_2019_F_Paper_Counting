@@ -6,26 +6,32 @@
 #include "sys.h"
 #include "key.h"
 
-u16 data0[30];
+#define MAXSIZE 5
+
+// Calibration data
+u32 data0[MAXSIZE];
+u32 res;
+u8  num;
 
 void blink(void);
+void sortout(void);
+u8 recognize(u32 data);
 
 int main(void)
 {
-    //float res [4];
-    char  disp[20];
-    u32   org [4];
-    u8    flag = 0;
+    char  disp[20];         // Display buffer
+    u32   org [4];          // Original data
+    u8    flag = 0;         // Key press flag
     u8    index = 0;
     
     delay_init();
-    //KEY_Init();
-    uart_init(115200);       // 串口 1 波特率 112500
+    Key_Init();
+    uart_init(115200);      // Serial port 1 @ 112500
     NVIC_Configuration();
     
 	OLED_Init();
-    OLED_ColorTurn(0);       // 0 正常显示 1 反色显示
-    OLED_DisplayTurn(0);     // 0 正常显示 1 屏幕翻转显示
+    OLED_ColorTurn(0);
+    OLED_DisplayTurn(0);
     OLED_Refresh();
 
     while(FDC2214_Init())
@@ -34,79 +40,143 @@ int main(void)
     }
 
     blink();
-    delay_ms(1000);
+    delay_ms(500);
 
-    for(index = 0; index < 11; index++)
+    for(index = 0; index < MAXSIZE; index++)
     {
-        OLED_Clear();
         sprintf((char*)disp, "Put on %d paper(s)", index);
         OLED_ShowString (12, 2, (u8*)disp, 12);
         OLED_ShowString (12, 20, (u8*)"Then press button", 12);
 
         OLED_Refresh();
 
-        while(KEY_Read())
+        while(Key_Read())
         {
             delay_ms(10);
         }
 
-        delay_ms(1000);
+        while(FDC2214_Init())
+        {
+            delay_ms(50);
+        }
+
+        delay_ms(500);
         
         org[0] = FCD2214_ReadCH(0);
         org[1] = FCD2214_ReadCH(1);
 
-        org[0] = org[0] + org[1];
-        data0[index] = org[0] / 2;
+        res = (org[0] + org[1]) / 2;
+        data0[index] = res;
 
         blink();
 
-        printf("Paper: %d, value: %d \r\n", index, data0[index]);
+        OLED_Clear();
+        sprintf((char*)disp, "num%d: %d", index, res);
+        OLED_ShowString (20, 50, (u8*)disp, 12);
+        OLED_Refresh();
+
+        if(res == 0)
+        {
+            index--;
+        }
+
+        // printf("Paper: %d, value: %d \r\n", );
     }
+    
+    sortout();
+    OLED_Clear();
+    OLED_Refresh();
     
     while(1)
     {
         if(!flag)
         {
-            while(FDC2214_Init())
-            {
-                delay_ms(50);
-            }
+            do{
+                while(FDC2214_Init())
+                {
+                    delay_ms(50);
+                }
 
-            org[0] = FCD2214_ReadCH(0);
-            org[1] = FCD2214_ReadCH(1);
-            printf("DATA: \r\n ch0: %d, ch1: %d \r\n", org[0], org[1]);
+                org[0] = FCD2214_ReadCH(0);
+                org[1] = FCD2214_ReadCH(1);
+                printf("DATA: \r\n ch0: %d, ch1: %d \r\n", org[0], org[1]);
+
+                res = (org[0] + org[1]) / 2;
+            } while (res ==0);
+
+            num = recognize(res);
             
             blink();
             OLED_Clear();
             
-            sprintf((char*)disp, "ch0:%d", org[0]);
-            OLED_ShowString (30, 36, (u8*)disp, 12);
-            sprintf((char*)disp, "ch1:%d", org[1]);
+            sprintf((char*)disp, "Number: %d", num);
+            OLED_ShowString (25,  6, (u8*)disp, 16);
+            sprintf((char*)disp, "res: %d", res);
             OLED_ShowString (30, 50, (u8*)disp, 12);
             
             OLED_Refresh();
-            LED_OFF;
+            LED_OFF();
         }
         else
         {
             OLED_Clear();
-            sprintf((char*)disp, "ch0:%d", org[0]);
-            OLED_ShowString (30, 36, (u8*)disp, 12);
-            sprintf((char*)disp, "ch1:%d", org[1]);
+            sprintf((char*)disp, "Number: %d", num);
+            OLED_ShowString (25,  6, (u8*)disp, 16);
+            sprintf((char*)disp, "res: %d", res);
             OLED_ShowString (30, 50, (u8*)disp, 12);
             OLED_Refresh();
         }
 
-        flag = KEY_Read();
+        flag = Key_Read();
         delay_ms(100);
     }
 }
 
+// Led blink
 void blink(void)
 {
     uint8_t i = 3;
     do{
-        delay_ms(200);  LED_ON;
-        delay_ms(200);  LED_OFF;
+        delay_ms(200);  LED_ON();
+        delay_ms(200);  LED_OFF();
     } while(i--);
+}
+
+void sortout(void)
+{
+    u8 index = 0;
+
+    for(index = 1; index < MAXSIZE - 1; index++)
+    {
+        data0[index] = (data0[index] + data0[index + 1]) / 2;
+    }
+}
+
+// Recognize paper number
+// data: raw data
+// return: paper number
+u8 recognize(u32 data)
+{
+    u8 i = 0;
+    u32 max = 40000000;
+
+    if(data > max)
+    {
+        return 0;
+    }
+    
+    if(data < data0[1])
+    {
+        return 1;
+    }
+
+    for(i = 0; i < MAXSIZE; i++)
+    {
+        if(data < data0[i])
+        {
+            return i;
+        }
+    }
+
+    return MAXSIZE;
 }
