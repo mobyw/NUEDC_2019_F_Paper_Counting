@@ -234,9 +234,8 @@ u8 FDC2214_Init(void)
 
     FDC_IIC_Init();
     res = FDC_Read(MANUFACTURER_ID);
-    ID_FDC2214 = FDC_Read(DEVICE_ID);
-
-    printf("ID: %x \r\n", ID_FDC2214);
+    // ID_FDC2214 = FDC_Read(DEVICE_ID);
+    // printf("ID: 0x%x \r\n", ID_FDC2214);
     
     if(res == 0x5449)
     {
