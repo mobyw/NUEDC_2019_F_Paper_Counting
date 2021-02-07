@@ -47,7 +47,7 @@ int main(void)
     {
         sprintf((char*)disp, "Put on %d paper(s)", index);
         OLED_ShowString (12, 2, (u8*)disp, 12);
-        OLED_ShowString (12, 30, (u8*)"Then press button", 12);
+        OLED_ShowString (12, 25, (u8*)"Then press button", 12);
 
         OLED_Refresh();
 
@@ -107,25 +107,24 @@ int main(void)
 
             num = recognize(res);
             
-            blink();
             OLED_Clear();
 
             if(num)
             {
                 sprintf((char*)disp, "Number: %d", num);
-                OLED_ShowString (25,  20, (u8*)disp, 16);
+                OLED_ShowString (25,  16, (u8*)disp, 16);
             }
             else
             {
                 sprintf((char*)disp, "Short circuit");
-                OLED_ShowString (8,  20, (u8*)disp, 16);
+                OLED_ShowString (8,  16, (u8*)disp, 16);
             }
 
             sprintf((char*)disp, "res: %d", res);
             OLED_ShowString (30, 50, (u8*)disp, 12);
-            
             OLED_Refresh();
-            LED_OFF();
+
+            blink();
         }
         else
         {
