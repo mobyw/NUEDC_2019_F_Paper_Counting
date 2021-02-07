@@ -22,11 +22,11 @@ int main(void)
     char  disp[20];         // Display buffer
     u32   org [4];          // Original data
     u8    flag = 0;         // Key press flag
-    u8    index = 0;
+    u8    index = 0;        // Array index
     
     delay_init();
     Key_Init();
-    uart_init(115200);      // Serial port 1 @ 112500
+    uart_init(115200);      // Serial port 1 @ 115200
     NVIC_Configuration();
     
 	OLED_Init();
@@ -42,11 +42,12 @@ int main(void)
     blink();
     delay_ms(500);
 
+    // Calibration
     for(index = 0; index < MAXSIZE; index++)
     {
         sprintf((char*)disp, "Put on %d paper(s)", index);
         OLED_ShowString (12, 2, (u8*)disp, 12);
-        OLED_ShowString (12, 20, (u8*)"Then press button", 12);
+        OLED_ShowString (12, 30, (u8*)"Then press button", 12);
 
         OLED_Refresh();
 
@@ -108,9 +109,18 @@ int main(void)
             
             blink();
             OLED_Clear();
-            
-            sprintf((char*)disp, "Number: %d", num);
-            OLED_ShowString (25,  6, (u8*)disp, 16);
+
+            if(num)
+            {
+                sprintf((char*)disp, "Number: %d", num);
+                OLED_ShowString (25,  20, (u8*)disp, 16);
+            }
+            else
+            {
+                sprintf((char*)disp, "Short circuit");
+                OLED_ShowString (8,  20, (u8*)disp, 16);
+            }
+
             sprintf((char*)disp, "res: %d", res);
             OLED_ShowString (30, 50, (u8*)disp, 12);
             
@@ -120,8 +130,18 @@ int main(void)
         else
         {
             OLED_Clear();
-            sprintf((char*)disp, "Number: %d", num);
-            OLED_ShowString (25,  6, (u8*)disp, 16);
+
+            if(num)
+            {
+                sprintf((char*)disp, "Number: %d", num);
+                OLED_ShowString (25,  20, (u8*)disp, 16);
+            }
+            else
+            {
+                sprintf((char*)disp, "Short circuit");
+                OLED_ShowString (8,  20, (u8*)disp, 16);
+            }
+
             sprintf((char*)disp, "res: %d", res);
             OLED_ShowString (30, 50, (u8*)disp, 12);
             OLED_Refresh();
