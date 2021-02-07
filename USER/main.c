@@ -68,12 +68,12 @@ int main(void)
         res = (org[0] + org[1]) / 2;
         data0[index] = res;
 
-        blink();
-
         OLED_Clear();
         sprintf((char*)disp, "num%d: %d", index, res);
         OLED_ShowString (20, 50, (u8*)disp, 12);
         OLED_Refresh();
+
+        blink();
 
         if(res == 0)
         {
@@ -158,9 +158,8 @@ void sortout(void)
 u8 recognize(u32 data)
 {
     u8 i = 0;
-    u32 max = 40000000;
 
-    if(data > max)
+    if(data > data0[MAXSIZE - 1] << 1)
     {
         return 0;
     }
@@ -170,7 +169,7 @@ u8 recognize(u32 data)
         return 1;
     }
 
-    for(i = 0; i < MAXSIZE; i++)
+    for(i = 1; i < MAXSIZE; i++)
     {
         if(data < data0[i])
         {
